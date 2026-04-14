@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InvoiceFlow — AI-powered invoice processing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #ffffff;
+      color: #0a1628;
+      overflow-x: hidden;
+    }
+    a { text-decoration: none; color: inherit; }
+    ul { list-style: none; }
+    img { display: block; max-width: 100%; }
+
+    /* ── Design Tokens ── */
+    :root {
+      --blue:    #1e6fff;
+      --purple:  #7c5cf6;
+      --navy:    #0a1628;
+      --muted:   #4a5568;
+      --bg-soft: #f0f4ff;
+      --bg-alt:  #e8eeff;
+      --glass-bg: rgba(255,255,255,0.75);
+      --glass-border: rgba(255,255,255,0.6);
+      --glow: 0 0 0 2px rgba(30,111,255,0.45), 0 8px 32px rgba(30,111,255,0.18);
+      --shadow: 0 4px 24px rgba(10,22,40,0.08);
+      --radius: 16px;
+    }
+
+    /* ── Gradient Utilities ── */
+    .grad-text {
+      background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .grad-btn {
+      background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      border-radius: 50px;
+      transition: opacity .2s, transform .2s, box-shadow .2s;
+    }
+    .grad-btn:hover {
+      opacity: .9;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(30,111,255,0.35);
+    }
+    .outline-btn {
+      background: transparent;
+      color: var(--blue);
+      border: 2px solid var(--blue);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      border-radius: 50px;
+      transition: background .2s, color .2s, transform .2s, box-shadow .2s;
+    }
+    .outline-btn:hover {
+      background: var(--blue);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(30,111,255,0.25);
+    }
+
+    /* ── Glass Card ── */
+    .glass {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    /* ── Section Label ── */
+    .section-label {
+      display: inline-block;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      color: var(--blue);
+      background: rgba(30,111,255,0.08);
+      border: 1px solid rgba(30,111,255,0.18);
+      border-radius: 50px;
+      padding: .35rem .9rem;
+      margin-bottom: 1.1rem;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--navy);
+      margin-bottom: 1rem;
+    }
+    .section-sub {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 540px;
+    }
+
+    /* ── Scroll Animation ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity .65s cubic-bezier(.22,.68,0,1.2), transform .65s cubic-bezier(.22,.68,0,1.2);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ════════════════════════════════════
+       NAVBAR
+    ════════════════════════════════════ */
+    #navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 0 5%;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background .35s, backdrop-filter .35s, box-shadow .35s;
+    }
+    #navbar.scrolled {
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 2px 20px rgba(10,22,40,0.08);
+    }
+    .nav-logo {
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+    .nav-links a {
+      font-size: .93rem;
+      font-weight: 500;
+      color: var(--navy);
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--blue); }
+    .nav-cta {
+      padding: .55rem 1.4rem;
+      font-size: .9rem;
+    }
+    /* Hamburger */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 6px;
+      background: none;
+      border: none;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--navy);
+      border-radius: 2px;
+      transition: all .3s;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    /* Mobile menu */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 68px; left: 0; right: 0;
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 2rem 0 2.5rem;
+      z-index: 999;
+      box-shadow: 0 8px 32px rgba(10,22,40,0.1);
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--navy);
+      transition: color .2s;
+    }
+    .mobile-menu a:hover { color: var(--blue); }
+    .mobile-menu .grad-btn { padding: .65rem 2rem; font-size: 1rem; }
+
+    /* ════════════════════════════════════
+       HERO
+    ════════════════════════════════════ */
+    #hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      padding: 0 5%;
+    }
+    #particle-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+    /* Soft gradient overlay over particles */
+    #hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, rgba(240,244,255,0.55) 0%, rgba(255,255,255,0.2) 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 3rem;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-top: 80px;
+    }
+    .hero-left { flex: 1; max-width: 580px; }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: rgba(30,111,255,0.09);
+      border: 1px solid rgba(30,111,255,0.22);
+      border-radius: 50px;
+      padding: .4rem 1rem;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--blue);
+      margin-bottom: 1.5rem;
+    }
+    .hero-badge .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 6px #22c55e;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .6; transform: scale(.8); }
+    }
+    .hero-h1 {
+      font-size: clamp(2.4rem, 5.5vw, 3.8rem);
+      font-weight: 700;
+      line-height: 1.12;
+      margin-bottom: 1.1rem;
+      color: var(--navy);
+    }
+    .hero-h1 span { display: block; }
+    #typing-wrap {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      font-weight: 500;
+      color: var(--muted);
+      min-height: 2em;
+      margin-bottom: 2.2rem;
+    }
+    #typing-text { display: inline; }
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.1em;
+      background: var(--blue);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink .75s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .hero-btns {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .hero-btns .grad-btn { padding: .8rem 2rem; font-size: 1rem; }
+    .hero-btns .outline-btn { padding: .8rem 2rem; font-size: 1rem; }
+
+    /* Floating preview card */
+    .hero-right { flex: 0 0 360px; }
+    .preview-card {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: .85rem;
+      animation: float 5s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .preview-header {
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      color: var(--muted);
+      border-bottom: 1px solid rgba(10,22,40,0.08);
+      padding-bottom: .75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .preview-header .dot-row { display: flex; gap: 5px; }
+    .preview-header .dot-row span {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+    .preview-header .dot-row span:nth-child(1) { background: #ff5f57; }
+    .preview-header .dot-row span:nth-child(2) { background: #febc2e; }
+    .preview-header .dot-row span:nth-child(3) { background: #28c840; }
+    .invoice-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(240,244,255,0.7);
+      border-radius: 10px;
+      padding: .7rem .9rem;
+      gap: .5rem;
+    }
+    .invoice-row-left { flex: 1; min-width: 0; }
+    .inv-name {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--navy);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .inv-code {
+      font-size: .7rem;
+      color: var(--muted);
+      margin-top: 2px;
+      font-weight: 500;
+    }
+    .inv-amount {
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--navy);
+      white-space: nowrap;
+    }
+    .verified-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: .68rem;
+      font-weight: 700;
+      color: #16a34a;
+      background: rgba(22,163,74,0.1);
+      border: 1px solid rgba(22,163,74,0.22);
+      border-radius: 50px;
+      padding: .22rem .6rem;
+      white-space: nowrap;
+    }
+    .verified-badge::before {
+      content: '✓';
+      font-size: .7rem;
+    }
+
+    /* ════════════════════════════════════
+       STATS BAR
+    ════════════════════════════════════ */
+    #stats {
+      background: var(--bg-soft);
+      padding: 4.5rem 5%;
+    }
+    .stats-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-around;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-number {
+      font-size: clamp(2.4rem, 5vw, 3.4rem);
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: .4rem;
+    }
+    .stat-label {
+      font-size: .9rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    /* ════════════════════════════════════
+       HOW IT WORKS
+    ════════════════════════════════════ */
+    #how {
+      padding: 6rem 5%;
+      background: #ffffff;
+    }
+    .how-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .how-header {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+    .step-card {
+      padding: 2rem 1.5rem;
+      text-align: center;
+      transition: box-shadow .3s, transform .3s;
+    }
+    .step-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--glow);
+    }
+    .step-num {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.2rem;
+      box-shadow: 0 4px 18px rgba(30,111,255,0.3);
+    }
+    .step-icon {
+      font-size: 1.8rem;
+      margin-bottom: .75rem;
+      display: block;
+    }
+    .step-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: .5rem;
+    }
+    .step-desc {
+      font-size: .88rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ════════════════════════════════════
+       FEATURES
+    ════════════════════════════════════ */
+    #features {
+      padding: 6rem 5%;
+      background: var(--bg-soft);
+    }
+    .feat-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .feat-header {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.8rem;
+    }
+    .feat-card {
+      padding: 2.2rem;
+      transition: box-shadow .35s, transform .35s, border-color .35s;
+      border: 1.5px solid rgba(255,255,255,0.6);
+      position: relative;
+      overflow: hidden;
+    }
+    .feat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius);
+      border: 2px solid transparent;
+      background: linear-gradient(135deg, rgba(30,111,255,0), rgba(124,92,246,0)) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: destination-out;
+      mask-composite: exclude;
+      transition: background .35s;
+      pointer-events: none;
+    }
+    .feat-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--glow), 0 16px 48px rgba(30,111,255,0.12);
+      border-color: rgba(30,111,255,0.35);
+    }
+    .feat-icon-wrap {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(30,111,255,0.12), rgba(124,92,246,0.12));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin-bottom: 1.2rem;
+    }
+    .feat-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: .6rem;
+    }
+    .feat-desc {
+      font-size: .9rem;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 1.1rem;
+    }
+    .feat-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--blue);
+      background: rgba(30,111,255,0.08);
+      border: 1px solid rgba(30,111,255,0.18);
+      border-radius: 50px;
+      padding: .28rem .75rem;
+    }
+
+    /* ════════════════════════════════════
+       CONTACT
+    ════════════════════════════════════ */
+    #contact {
+      padding: 6rem 5%;
+      background: #ffffff;
+    }
+    .contact-inner {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .contact-inner .section-sub { margin: 0 auto 2.5rem; }
+    .contact-form-card {
+      padding: 2.5rem;
+      text-align: left;
+    }
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: .45rem;
+    }
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      background: rgba(240,244,255,0.7);
+      border: 1.5px solid rgba(30,111,255,0.12);
+      border-radius: 10px;
+      padding: .75rem 1rem;
+      font-family: 'Inter', sans-serif;
+      font-size: .93rem;
+      color: var(--navy);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      resize: vertical;
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: #9aa5b4; }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(30,111,255,0.12);
+    }
+    .form-submit {
+      width: 100%;
+      padding: .9rem;
+      font-size: 1rem;
+      margin-top: .4rem;
+    }
+    .contact-info {
+      margin-top: 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      font-size: .95rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .contact-info a {
+      color: var(--blue);
+      font-weight: 600;
+      transition: opacity .2s;
+    }
+    .contact-info a:hover { opacity: .75; }
+    .contact-info .mail-icon {
+      width: 20px;
+      height: 20px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    /* ════════════════════════════════════
+       FOOTER
+    ════════════════════════════════════ */
+    #footer {
+      background: var(--navy);
+      color: rgba(255,255,255,0.6);
+      padding: 3.5rem 5% 2.5rem;
+    }
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .footer-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .footer-logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .footer-links a {
+      font-size: .9rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.55);
+      transition: color .2s;
+    }
+    .footer-links a:hover { color: #fff; }
+    .footer-email a {
+      font-size: .9rem;
+      color: rgba(30,111,255,0.85);
+      font-weight: 600;
+      transition: opacity .2s;
+    }
+    .footer-email a:hover { opacity: .75; }
+    .footer-copy {
+      font-size: .82rem;
+      text-align: center;
+      color: rgba(255,255,255,0.3);
+    }
+
+    /* ════════════════════════════════════
+       RESPONSIVE
+    ════════════════════════════════════ */
+    @media (max-width: 1024px) {
+      .steps-grid { grid-template-columns: repeat(2, 1fr); }
+      .feat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .hero-inner {
+        flex-direction: column;
+        text-align: center;
+        padding-top: 100px;
+        padding-bottom: 3rem;
+      }
+      .hero-left { max-width: 100%; }
+      .hero-btns { justify-content: center; }
+      .hero-right { flex: none; width: 100%; max-width: 380px; }
+      .steps-grid { grid-template-columns: 1fr 1fr; }
+      .feat-grid { grid-template-columns: 1fr; }
+      .footer-top { flex-direction: column; align-items: flex-start; }
+    }
+    @media (max-width: 480px) {
+      .steps-grid { grid-template-columns: 1fr; }
+      .stats-inner { flex-direction: column; gap: 2.5rem; }
+      .hero-btns { flex-direction: column; align-items: center; }
+      .hero-btns .grad-btn,
+      .hero-btns .outline-btn { width: 100%; max-width: 280px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════ NAVBAR ══════════ -->
+  <nav id="navbar">
+    <a href="#hero" class="nav-logo grad-text">InvoiceFlow</a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li>
+        <a href="https://app.invoice-sorter.com" class="grad-btn nav-cta" style="display:inline-block;">
+          Get started
+        </a>
+      </li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Mobile menu -->
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="#features"  onclick="closeMobile()">Features</a>
+    <a href="#how"       onclick="closeMobile()">How it works</a>
+    <a href="#contact"   onclick="closeMobile()">Contact</a>
+    <a href="https://app.invoice-sorter.com" class="grad-btn" style="padding:.7rem 2rem;">Get started</a>
+  </div>
+
+  <!-- ══════════ HERO ══════════ -->
+  <section id="hero">
+    <canvas id="particle-canvas"></canvas>
+
+    <div class="hero-inner">
+      <!-- Left -->
+      <div class="hero-left reveal">
+        <div class="hero-badge">
+          <span class="dot"></span>
+          AI-powered &middot; Live
+        </div>
+
+        <h1 class="hero-h1">
+          <span>Invoice processing,</span>
+          <span class="grad-text">automated.</span>
+        </h1>
+
+        <div id="typing-wrap">
+          <span id="typing-text"></span><span class="cursor"></span>
+        </div>
+
+        <div class="hero-btns">
+          <a href="https://app.invoice-sorter.com" class="grad-btn">Login</a>
+          <a href="#contact" class="outline-btn">See how it works</a>
+        </div>
+      </div>
+
+      <!-- Right: floating preview -->
+      <div class="hero-right reveal" style="transition-delay:.2s">
+        <div class="glass preview-card">
+          <div class="preview-header">
+            <div class="dot-row">
+              <span></span><span></span><span></span>
+            </div>
+            <span>Invoice Processor · Live</span>
+          </div>
+
+          <div class="invoice-row">
+            <div class="invoice-row-left">
+              <div class="inv-name">Organic Cotton T-Shirts</div>
+              <div class="inv-code">HS: 6109.10.00 · UK Duty: 12%</div>
+            </div>
+            <div class="inv-amount">£2,340.00</div>
+            <div class="verified-badge">Verified</div>
+          </div>
+
+          <div class="invoice-row">
+            <div class="invoice-row-left">
+              <div class="inv-name">Stainless Steel Cutlery Set</div>
+              <div class="inv-code">HS: 8215.99.00 · UK Duty: 0%</div>
+            </div>
+            <div class="inv-amount">£890.50</div>
+            <div class="verified-badge">Verified</div>
+          </div>
+
+          <div class="invoice-row">
+            <div class="invoice-row-left">
+              <div class="inv-name">Ceramic Planters (Set of 6)</div>
+              <div class="inv-code">HS: 6913.10.00 · UK Duty: 2.7%</div>
+            </div>
+            <div class="inv-amount">£1,105.00</div>
+            <div class="verified-badge">Verified</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ STATS ══════════ -->
+  <section id="stats">
+    <div class="stats-inner">
+      <div class="stat-item reveal">
+        <div class="stat-number grad-text" data-target="99.8" data-suffix="%" data-decimals="1">0%</div>
+        <div class="stat-label">Verification accuracy</div>
+      </div>
+      <div class="stat-item reveal" style="transition-delay:.12s">
+        <div class="stat-number grad-text" data-target="10" data-suffix="x" data-decimals="0">0x</div>
+        <div class="stat-label">Faster than manual</div>
+      </div>
+      <div class="stat-item reveal" style="transition-delay:.24s">
+        <div class="stat-number grad-text" data-target="147" data-suffix="" data-decimals="0">0</div>
+        <div class="stat-label">Products in memory</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ HOW IT WORKS ══════════ -->
+  <section id="how">
+    <div class="how-inner">
+      <div class="how-header reveal">
+        <div class="section-label">HOW IT WORKS</div>
+        <h2 class="section-title">Four steps to perfect invoices</h2>
+      </div>
+
+      <div class="steps-grid">
+
+        <div class="step-card glass reveal" style="transition-delay:.05s">
+          <div class="step-num">1</div>
+          <span class="step-icon">📄</span>
+          <div class="step-title">Upload</div>
+          <div class="step-desc">Drop your invoice — PDF, JPG, or Word document. We handle any format your suppliers use.</div>
+        </div>
+
+        <div class="step-card glass reveal" style="transition-delay:.12s">
+          <div class="step-num">2</div>
+          <span class="step-icon">🤖</span>
+          <div class="step-title">AI extracts</div>
+          <div class="step-desc">Dual verification — Run A vs Run B — two independent AI extractions are compared automatically for maximum accuracy.</div>
+        </div>
+
+        <div class="step-card glass reveal" style="transition-delay:.19s">
+          <div class="step-num">3</div>
+          <span class="step-icon">🔍</span>
+          <div class="step-title">Tariff lookup</div>
+          <div class="step-desc">UK duty rates and VAT fetched live from the UK Trade Tariff API and appended to every line item.</div>
+        </div>
+
+        <div class="step-card glass reveal" style="transition-delay:.26s">
+          <div class="step-num">4</div>
+          <span class="step-icon">⬇️</span>
+          <div class="step-title">Download</div>
+          <div class="step-desc">A clean, verified Excel file lands in your browser — ready to import into your accounting system.</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ FEATURES ══════════ -->
+  <section id="features">
+    <div class="feat-inner">
+      <div class="feat-header reveal">
+        <div class="section-label">FEATURES</div>
+        <h2 class="section-title">Everything you need</h2>
+      </div>
+
+      <div class="feat-grid">
+
+        <div class="feat-card glass reveal" style="transition-delay:.06s">
+          <div class="feat-icon-wrap">🔒</div>
+          <div class="feat-title">Dual AI verification</div>
+          <div class="feat-desc">Two independent extractions are compared automatically for maximum accuracy — discrepancies are flagged before any export.</div>
+          <span class="feat-tag">99.8% accuracy</span>
+        </div>
+
+        <div class="feat-card glass reveal" style="transition-delay:.14s">
+          <div class="feat-icon-wrap">🌐</div>
+          <div class="feat-title">UK Trade Tariff lookup</div>
+          <div class="feat-desc">Duty rates and VAT fetched live from the UK Trade Tariff API — always current, no manual code lookups needed.</div>
+          <span class="feat-tag">Real-time data</span>
+        </div>
+
+        <div class="feat-card glass reveal" style="transition-delay:.22s">
+          <div class="feat-icon-wrap">🧠</div>
+          <div class="feat-title">Smart product memory</div>
+          <div class="feat-desc">Learns commodity subcodes over time — fewer questions, faster processing, and growing accuracy the more you use it.</div>
+          <span class="feat-tag">Gets smarter</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ CONTACT ══════════ -->
+  <section id="contact">
+    <div class="contact-inner">
+      <div class="reveal">
+        <div class="section-label">CONTACT</div>
+        <h2 class="section-title">Let's build your solution</h2>
+        <p class="section-sub">Describe your problem — we'll build a custom solution for you.</p>
+      </div>
+
+      <div class="contact-form-card glass reveal" style="transition-delay:.1s">
+        <form action="https://formspree.io/f/placeholder" method="POST">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" placeholder="Your full name" required />
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="you@company.com" required />
+          </div>
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="5" placeholder="Describe your invoice processing challenge..."></textarea>
+          </div>
+          <button type="submit" class="grad-btn form-submit">Send message</button>
+        </form>
+      </div>
+
+      <div class="contact-info reveal" style="transition-delay:.2s">
+        <svg class="mail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/>
+        </svg>
+        <a href="mailto:ai@dornack.com">ai@dornack.com</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ FOOTER ══════════ -->
+  <footer id="footer">
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-logo grad-text">InvoiceFlow</div>
+        <ul class="footer-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="#">Privacy</a></li>
+        </ul>
+        <div class="footer-email">
+          <a href="mailto:ai@dornack.com">ai@dornack.com</a>
+        </div>
+      </div>
+      <p class="footer-copy">© 2026 InvoiceFlow. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ══════════ JAVASCRIPT ══════════ -->
+  <script>
+    /* ── Hamburger / Mobile menu ── */
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('open');
+      mobileMenu.classList.toggle('open');
+    });
+    function closeMobile() {
+      hamburger.classList.remove('open');
+      mobileMenu.classList.remove('open');
+    }
+
+    /* ── Navbar glass on scroll ── */
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 40) navbar.classList.add('scrolled');
+      else navbar.classList.remove('scrolled');
+    }, { passive: true });
+
+    /* ── Particle Canvas ── */
+    (function () {
+      const canvas = document.getElementById('particle-canvas');
+      const ctx = canvas.getContext('2d');
+      let W, H, particles;
+      const COUNT = 70;
+      const MAX_DIST = 140;
+      const BLUE = '30,111,255';
+      const PURPLE = '124,92,246';
+
+      function resize() {
+        W = canvas.width  = canvas.offsetWidth;
+        H = canvas.height = canvas.offsetHeight;
+      }
+      window.addEventListener('resize', () => { resize(); initParticles(); }, { passive: true });
+
+      function Particle() {
+        this.x  = Math.random() * W;
+        this.y  = Math.random() * H;
+        this.vx = (Math.random() - .5) * .45;
+        this.vy = (Math.random() - .5) * .45;
+        this.r  = Math.random() * 2.2 + 1;
+        this.alpha = Math.random() * .4 + .25;
+        this.hue = Math.random() < .6 ? BLUE : PURPLE;
+      }
+      Particle.prototype.update = function () {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > W) this.vx *= -1;
+        if (this.y < 0 || this.y > H) this.vy *= -1;
+      };
+      Particle.prototype.draw = function () {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${this.hue},${this.alpha})`;
+        ctx.fill();
+      };
+
+      function initParticles() {
+        particles = Array.from({ length: COUNT }, () => new Particle());
+      }
+
+      function loop() {
+        ctx.clearRect(0, 0, W, H);
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].update();
+          particles[i].draw();
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < MAX_DIST) {
+              const alpha = (1 - dist / MAX_DIST) * .18;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(${BLUE},${alpha})`;
+              ctx.lineWidth = .8;
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(loop);
+      }
+
+      resize();
+      initParticles();
+      loop();
+    })();
+
+    /* ── Typing effect ── */
+    (function () {
+      const phrases = [
+        'Extract invoice data automatically.',
+        'Look up UK Trade Tariff codes instantly.',
+        'Export verified Excel files in seconds.'
+      ];
+      const el = document.getElementById('typing-text');
+      let phraseIdx = 0, charIdx = 0, deleting = false;
+      const SPEED_TYPE = 48, SPEED_DEL = 28, PAUSE = 2000;
+
+      function tick() {
+        const phrase = phrases[phraseIdx];
+        if (!deleting) {
+          charIdx++;
+          el.textContent = phrase.slice(0, charIdx);
+          if (charIdx === phrase.length) {
+            deleting = true;
+            setTimeout(tick, PAUSE);
+            return;
+          }
+        } else {
+          charIdx--;
+          el.textContent = phrase.slice(0, charIdx);
+          if (charIdx === 0) {
+            deleting = false;
+            phraseIdx = (phraseIdx + 1) % phrases.length;
+          }
+        }
+        setTimeout(tick, deleting ? SPEED_DEL : SPEED_TYPE);
+      }
+      setTimeout(tick, 900);
+    })();
+
+    /* ── Scroll reveal (IntersectionObserver) ── */
+    (function () {
+      const els = document.querySelectorAll('.reveal');
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            obs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      els.forEach(el => obs.observe(el));
+    })();
+
+    /* ── Counter animation ── */
+    (function () {
+      const counters = document.querySelectorAll('.stat-number[data-target]');
+
+      function animateCounter(el) {
+        const target   = parseFloat(el.dataset.target);
+        const suffix   = el.dataset.suffix   || '';
+        const decimals = parseInt(el.dataset.decimals, 10);
+        const duration = 1800;
+        const start    = performance.now();
+
+        function step(now) {
+          const t = Math.min((now - start) / duration, 1);
+          // ease out cubic
+          const eased = 1 - Math.pow(1 - t, 3);
+          const val   = eased * target;
+          el.textContent = val.toFixed(decimals) + suffix;
+          if (t < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      }
+
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            animateCounter(e.target);
+            obs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.5 });
+
+      counters.forEach(c => obs.observe(c));
+    })();
+  </script>
+</body>
+</html>
