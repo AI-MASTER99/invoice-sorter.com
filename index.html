@@ -3,860 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InvoiceSorter &mdash; Invoice processing, automated.</title>
+    <title>InvoiceFlow &mdash; Invoice processing, automated.</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --blue-primary: #4361EE; --blue-dark: #0A1128; --blue-accent: #6C63FF;
+            --blue-light: #EEF1FF; --blue-bg: #F0F4FF; --green-badge: #22C55E;
+            --text-dark: #0A1128; --text-gray: #64748B; --white: #FFFFFF; --border-light: #E2E8F0;
         }
-
-        :root {h
-            --blue-primary: #4361EE;
-            --blue-dark: #0A1128;
-            --blue-accent: #6C63FF;
-            --blue-light: #EEF1FF;
-            --blue-bg: #F0F4FF;
-            --green-badge: #22C55E;
-            --text-dark: #0A1128;
-            --text-gray: #64748B;
-            --white: #FFFFFF;
-            --border-light: #E2E8F0;
-        }
-
         html { scroll-behavior: smooth; }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: var(--text-dark);
-            background: var(--white);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 18px 48px;
-            position: sticky;
-            top: 0;
-            background: rgba(255,255,255,0.88);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            z-index: 100;
-        }
-
-        .logo {
-            font-size: 22px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-decoration: none;
-            letter-spacing: -0.5px;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 36px;
-            list-style: none;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: var(--text-dark);
-            font-size: 15px;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; color: var(--text-dark); background: var(--white); line-height: 1.6; overflow-x: hidden; }
+        nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 48px; position: sticky; top: 0; background: rgba(255,255,255,0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 100; border-bottom: 1px solid var(--border-light); }
+        .logo { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; letter-spacing: -0.5px; }
+        .nav-links { display: flex; align-items: center; gap: 36px; list-style: none; }
+        .nav-links a { text-decoration: none; color: var(--text-dark); font-size: 15px; font-weight: 500; transition: color 0.2s; }
         .nav-links a:hover { color: var(--blue-primary); }
-
-        .btn-cta {
-            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-            color: var(--white) !important;
-            padding: 10px 24px;
-            border-radius: 24px;
-            font-weight: 600;
-            transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
-        }
-
-        .btn-cta:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(108,99,255,0.3);
-            filter: brightness(1.05);
-        }
-
-        .hero {
-            position: relative;
-            padding: 80px 48px 100px;
-            max-width: 1240px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 60px;
-            min-height: 620px;
-        }
-
-        .hero-left {
-            position: relative;
-            z-index: 1;
-            flex: 1;
-        }
-
-        .hero-right {
-            position: relative;
-            z-index: 1;
-            flex: 0 0 480px;
-        }
-
-        .pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--white);
-            border: 1px solid var(--border-light);
-            border-radius: 20px;
-            padding: 6px 16px;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-dark);
-            margin-bottom: 28px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        }
-
-        .pill-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--green-badge);
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
-            50% { opacity: 0.6; box-shadow: 0 0 0 4px rgba(34,197,94,0); }
-        }
-
-        .hero h1 {
-            font-size: 66px;
-            font-weight: 900;
-            line-height: 1.04;
-            letter-spacing: -2.5px;
-            margin-bottom: 22px;
-        }
-
-        .hero h1 .accent {
-            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-sub {
-            font-size: 17px;
-            color: var(--text-gray);
-            margin-bottom: 38px;
-            max-width: 440px;
-            line-height: 1.65;
-        }
-
-        .hero-btns {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .btn-primary {
-            display: inline-flex;
-            align-items: center;
-            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-            color: var(--white);
-            padding: 14px 34px;
-            border-radius: 28px;
-            text-decoration: none;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(67,97,238,0.3);
-            filter: brightness(1.05);
-        }
-
-        .btn-outline {
-            display: inline-flex;
-            align-items: center;
-            background: var(--white);
-            padding: 14px 34px;
-            border-radius: 28px;
-            text-decoration: none;
-            font-size: 16px;
-            font-weight: 600;
-            border: 1.5px solid rgba(67,97,238,0.3);
-            transition: all 0.2s;
-            background-image: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .btn-outline:hover {
-            border-color: var(--blue-accent);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 16px rgba(108,99,255,0.15);
-        }
-
-        .invoice-card {
-            background: var(--white);
-            border-radius: 18px;
-            border: 1px solid var(--border-light);
-            box-shadow: 0 12px 48px rgba(67,97,238,0.12), 0 2px 6px rgba(0,0,0,0.04);
-            overflow: hidden;
-            width: 460px;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-
-        .card-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border-light);
-        }
-
+        .btn-cta { background: var(--white) !important; color: var(--blue-primary) !important; -webkit-text-fill-color: var(--blue-primary) !important; padding: 10px 24px; border-radius: 24px; font-weight: 600; border: 1.5px solid var(--blue-primary); transition: transform 0.15s, box-shadow 0.2s, background 0.2s; }
+        .btn-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(108,99,255,0.2); background: var(--blue-light) !important; }
+        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; border: none; background: none; z-index: 200; }
+        .hamburger span { display: block; width: 24px; height: 2.5px; background: var(--text-dark); border-radius: 2px; transition: transform 0.3s, opacity 0.3s; }
+        .hamburger.active span:nth-child(1) { transform: translateY(7.5px) rotate(45deg); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: translateY(-7.5px) rotate(-45deg); }
+        .mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(10,17,40,0.4); z-index: 90; opacity: 0; transition: opacity 0.3s; }
+        .mobile-overlay.active { opacity: 1; }
+        .hero { position: relative; padding: 80px 48px 100px; max-width: 1240px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 60px; min-height: 620px; }
+        .hero-left { position: relative; z-index: 1; flex: 1; }
+        .hero-right { position: relative; z-index: 1; flex: 0 0 480px; }
+        .pill { display: inline-flex; align-items: center; gap: 8px; background: var(--white); border: 1px solid var(--border-light); border-radius: 20px; padding: 6px 16px; font-size: 13px; font-weight: 500; color: var(--text-dark); margin-bottom: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .pill-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-badge); animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { opacity: 0.6; box-shadow: 0 0 0 4px rgba(34,197,94,0); } }
+        .hero h1 { font-size: 66px; font-weight: 900; line-height: 1.04; letter-spacing: -2.5px; margin-bottom: 22px; }
+        .hero h1 .accent { background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero-sub { font-size: 17px; color: var(--text-gray); margin-bottom: 38px; max-width: 440px; line-height: 1.65; }
+        .hero-btns { display: flex; align-items: center; gap: 14px; }
+        .btn-primary { display: inline-flex; align-items: center; background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); color: var(--white); padding: 14px 34px; border-radius: 28px; text-decoration: none; font-size: 16px; font-weight: 600; transition: all 0.2s; }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(67,97,238,0.3); filter: brightness(1.05); }
+        .btn-outline { display: inline-flex; align-items: center; background: var(--white); padding: 14px 34px; border-radius: 28px; text-decoration: none; font-size: 16px; font-weight: 600; border: 1.5px solid rgba(67,97,238,0.3); transition: all 0.2s; background-image: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .btn-outline:hover { border-color: var(--blue-accent); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(108,99,255,0.15); }
+        .invoice-card { background: var(--white); border-radius: 18px; border: 1px solid var(--border-light); box-shadow: 0 12px 48px rgba(67,97,238,0.12), 0 2px 6px rgba(0,0,0,0.04); overflow: hidden; width: 460px; animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .card-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border-light); }
         .dots { display: flex; gap: 6px; }
-        .dots i {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            display: block;
-        }
+        .dots i { width: 12px; height: 12px; border-radius: 50%; display: block; }
         .dots i:nth-child(1) { background: #FF5F57; }
         .dots i:nth-child(2) { background: #FEBC2E; }
         .dots i:nth-child(3) { background: #28C840; }
-
-        .card-bar span {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-
-        .line-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 18px 24px;
-            border-bottom: 1px solid var(--border-light);
-            transition: background 0.15s;
-        }
-
+        .card-bar span { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+        .line-item { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid var(--border-light); transition: background 0.15s; }
         .line-item:last-child { border-bottom: none; }
         .line-item:hover { background: #FAFBFF; }
-
-        .li-info h4 {
-            font-size: 15.5px;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .li-info p {
-            font-size: 12.5px;
-            color: var(--text-gray);
-        }
-
-        .li-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-shrink: 0;
-        }
-
-        .price {
-            font-size: 16px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .tag-verified {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: #DCFCE7;
-            color: #16A34A;
-            padding: 5px 12px;
-            border-radius: 10px;
-            border: 1px solid #86EFAC;
-            font-size: 12px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
+        .li-info h4 { font-size: 15.5px; font-weight: 600; margin-bottom: 2px; }
+        .li-info p { font-size: 12.5px; color: var(--text-gray); }
+        .li-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .price { font-size: 16px; font-weight: 700; white-space: nowrap; }
+        .tag-verified { display: inline-flex; align-items: center; gap: 4px; background: #DCFCE7; color: #16A34A; padding: 5px 12px; border-radius: 10px; border: 1px solid #86EFAC; font-size: 12px; font-weight: 600; white-space: nowrap; }
         .tag-verified svg { width: 11px; height: 11px; flex-shrink: 0; }
-
-        .stats {
-            background: var(--blue-bg);
-            padding: 56px 48px;
-        }
-
-        .stats-row {
-            max-width: 1240px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-        }
-
+        .stats { background: var(--blue-bg); padding: 56px 48px; }
+        .stats-row { max-width: 1240px; margin: 0 auto; display: flex; justify-content: space-around; align-items: center; }
         .stat { text-align: center; }
-
-        .stat-val {
-            font-size: 58px;
-            font-weight: 900;
-            letter-spacing: -2px;
-            line-height: 1;
-            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-lbl {
-            font-size: 15px;
-            color: var(--text-gray);
-            font-weight: 500;
-            margin-top: 6px;
-        }
-
-        .how {
-            padding: 100px 48px;
-            max-width: 1240px;
-            margin: 0 auto;
-        }
-
-        .section-top {
-            text-align: center;
-            margin-bottom: 56px;
-        }
-
-        .section-pill {
-            display: inline-block;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--blue-primary);
-            background: var(--blue-light);
-            border: 1.5px solid rgba(67,97,238,0.18);
-            border-radius: 20px;
-            padding: 8px 20px;
-            margin-bottom: 18px;
-        }
-
-        .section-top h2 {
-            font-size: 42px;
-            font-weight: 700;
-            letter-spacing: -1.5px;
-        }
-
-        .steps {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 22px;
-        }
-
-        .step {
-            background: var(--white);
-            border: 1px solid var(--border-light);
-            border-radius: 16px;
-            padding: 30px 24px;
-            transition: border-color 0.25s, box-shadow 0.25s;
-        }
-
-        .step:last-child {
-            border-color: rgba(67,97,238,0.35);
-            box-shadow: 0 4px 16px rgba(67,97,238,0.06);
-        }
-
-        .step:hover {
-            border-color: rgba(67,97,238,0.4);
-            box-shadow: 0 4px 20px rgba(67,97,238,0.08);
-        }
-
-        .step-num {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 18px;
-        }
-
-        .step-ico {
-            font-size: 30px;
-            margin-bottom: 12px;
-            line-height: 1;
-        }
-
-        .step h3 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .step p {
-            font-size: 14px;
-            color: var(--text-gray);
-            line-height: 1.65;
-        }
-
-        .features {
-            background: var(--blue-bg);
-            padding: 100px 48px;
-        }
-
-        .features-inner {
-            max-width: 1240px;
-            margin: 0 auto;
-        }
-
-        .feat-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-        }
-
-        .feat {
-            background: var(--white);
-            border: 1px solid var(--border-light);
-            border-radius: 16px;
-            padding: 36px 28px;
-            transition: border-color 0.25s, box-shadow 0.25s;
-        }
-
-        .feat:last-child {
-            border-color: rgba(67,97,238,0.35);
-            box-shadow: 0 4px 16px rgba(67,97,238,0.06);
-        }
-
-        .feat:hover {
-            border-color: rgba(67,97,238,0.4);
-            box-shadow: 0 6px 24px rgba(67,97,238,0.08);
-        }
-
-        .feat-ico {
-            width: 56px;
-            height: 56px;
-            border-radius: 14px;
-            background: var(--blue-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            margin-bottom: 22px;
-        }
-
-        .feat h3 {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .feat p {
-            font-size: 14px;
-            color: var(--text-gray);
-            line-height: 1.7;
-            margin-bottom: 20px;
-        }
-
-        .feat-tag {
-            display: inline-block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--blue-primary);
-            border: 1.5px solid rgba(67,97,238,0.3);
-            border-radius: 14px;
-            padding: 5px 14px;
-        }
-
-        .contact {
-            padding: 100px 48px;
-            max-width: 1240px;
-            margin: 0 auto;
-        }
-
-        .form-box {
-            max-width: 620px;
-            margin: 0 auto;
-            background: var(--blue-bg);
-            border-radius: 20px;
-            padding: 44px 48px;
-        }
-
+        .stat-val { font-size: 58px; font-weight: 900; letter-spacing: -2px; line-height: 1; background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .stat-lbl { font-size: 15px; color: var(--text-gray); font-weight: 500; margin-top: 6px; }
+        .how { padding: 100px 48px; max-width: 1240px; margin: 0 auto; }
+        .section-top { text-align: center; margin-bottom: 56px; }
+        .section-pill { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--blue-primary); background: var(--blue-light); border: 1.5px solid rgba(67,97,238,0.18); border-radius: 20px; padding: 8px 20px; margin-bottom: 18px; }
+        .section-top h2 { font-size: 42px; font-weight: 700; letter-spacing: -1.5px; }
+        .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+        .step { background: var(--white); border: 1px solid var(--border-light); border-radius: 16px; padding: 30px 24px; transition: border-color 0.25s, box-shadow 0.25s; }
+        .step:last-child { border-color: rgba(67,97,238,0.35); box-shadow: 0 4px 16px rgba(67,97,238,0.06); }
+        .step:hover { border-color: rgba(67,97,238,0.4); box-shadow: 0 4px 20px rgba(67,97,238,0.08); }
+        .step-num { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; margin-bottom: 18px; }
+        .step-ico { font-size: 30px; margin-bottom: 12px; line-height: 1; }
+        .step h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+        .step p { font-size: 14px; color: var(--text-gray); line-height: 1.65; }
+        .features { background: var(--blue-bg); padding: 100px 48px; }
+        .features-inner { max-width: 1240px; margin: 0 auto; }
+        .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .feat { background: var(--white); border: 1px solid var(--border-light); border-radius: 16px; padding: 36px 28px; transition: border-color 0.25s, box-shadow 0.25s; }
+        .feat:last-child { border-color: rgba(67,97,238,0.35); box-shadow: 0 4px 16px rgba(67,97,238,0.06); }
+        .feat:hover { border-color: rgba(67,97,238,0.4); box-shadow: 0 6px 24px rgba(67,97,238,0.08); }
+        .feat-ico { width: 56px; height: 56px; border-radius: 14px; background: var(--blue-light); display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 22px; }
+        .feat h3 { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+        .feat p { font-size: 14px; color: var(--text-gray); line-height: 1.7; margin-bottom: 20px; }
+        .feat-tag { display: inline-block; font-size: 13px; font-weight: 600; color: var(--blue-primary); border: 1.5px solid rgba(67,97,238,0.3); border-radius: 14px; padding: 5px 14px; }
+        .contact { padding: 100px 48px; max-width: 1240px; margin: 0 auto; }
+        .form-box { max-width: 620px; margin: 0 auto; background: var(--blue-bg); border-radius: 20px; padding: 44px 48px; }
         .fg { margin-bottom: 22px; }
-
-        .fg label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .fg input, .fg textarea {
-            width: 100%;
-            padding: 13px 16px;
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            font-size: 15px;
-            font-family: inherit;
-            background: var(--white);
-            transition: border-color 0.2s, box-shadow 0.2s;
-            outline: none;
-        }
-
+        .fg label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .fg input, .fg textarea { width: 100%; padding: 13px 16px; border: 1px solid var(--border-light); border-radius: 12px; font-size: 15px; font-family: inherit; background: var(--white); transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
         .fg input::placeholder, .fg textarea::placeholder { color: #94A3B8; }
-
-        .fg input:focus, .fg textarea:focus {
-            border-color: var(--blue-primary);
-            box-shadow: 0 0 0 3px rgba(67,97,238,0.1);
-        }
-
-        .fg textarea {
-            min-height: 130px;
-            resize: vertical;
-        }
-
-        .btn-send {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-            color: var(--white);
-            font-size: 16px;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.15s;
-        }
-
-        .btn-send:hover {
-            opacity: 0.92;
-            transform: translateY(-1px);
-        }
-
-        .mail-line {
-            text-align: center;
-            margin-top: 28px;
-            font-size: 15px;
-            color: var(--text-gray);
-        }
-
-        .mail-line a {
-            color: var(--blue-primary);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
+        .fg input:focus, .fg textarea:focus { border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(67,97,238,0.1); }
+        .fg textarea { min-height: 130px; resize: vertical; }
+        .btn-send { width: 100%; padding: 15px; border: none; border-radius: 12px; background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); color: var(--white); font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; transition: opacity 0.2s, transform 0.15s; }
+        .btn-send:hover { opacity: 0.92; transform: translateY(-1px); }
+        .mail-line { text-align: center; margin-top: 28px; font-size: 15px; color: var(--text-gray); }
+        .mail-line a { color: var(--blue-primary); text-decoration: none; font-weight: 500; }
         .mail-line a:hover { text-decoration: underline; }
-
-        @media (max-width: 1060px) {
-            .hero {
-                flex-direction: column;
-                text-align: center;
-                padding: 60px 28px 80px;
-            }
-            .hero-right { flex: unset; }
-            .hero h1 { font-size: 50px; }
-            .hero-sub { margin-left: auto; margin-right: auto; }
-            .hero-btns { justify-content: center; }
-            .steps { grid-template-columns: repeat(2, 1fr); }
-            .feat-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (max-width: 640px) {
-            nav { padding: 14px 20px; }
-            .nav-links { gap: 14px; }
-            .nav-links li:not(:last-child) a { font-size: 13px; }
-            .hero h1 { font-size: 38px; letter-spacing: -1.5px; }
-            .stat-val { font-size: 42px; }
-            .steps, .feat-grid { grid-template-columns: 1fr; }
-            .invoice-card { width: 100%; max-width: 370px; }
-            .form-box { padding: 28px 24px; }
-            .section-top h2 { font-size: 32px; }
-        }
-
-        #network-canvas {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
+        .site-footer { background: var(--blue-dark); color: #CBD5E1; padding: 60px 48px 32px; }
+        .footer-inner { max-width: 1240px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start; gap: 40px; flex-wrap: wrap; }
+        .footer-brand { flex: 1; min-width: 220px; }
+        .footer-brand .logo { font-size: 20px; font-weight: 800; background: linear-gradient(135deg, #6C8AFF 0%, #A78BFA 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; display: inline-block; margin-bottom: 12px; }
+        .footer-brand p { font-size: 14px; color: #94A3B8; line-height: 1.6; max-width: 280px; }
+        .footer-links { display: flex; gap: 60px; }
+        .footer-col h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--white); margin-bottom: 16px; }
+        .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+        .footer-col a { color: #94A3B8; text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .footer-col a:hover { color: var(--white); }
+        .footer-contact-link { color: #6C8AFF; text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+        .footer-contact-link:hover { color: #A78BFA; }
+        .footer-bottom { max-width: 1240px; margin: 40px auto 0; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .footer-bottom p { font-size: 13px; color: #64748B; }
+        .footer-bottom-links { display: flex; gap: 24px; }
+        .footer-bottom-links a { font-size: 13px; color: #64748B; text-decoration: none; transition: color 0.2s; }
+        .footer-bottom-links a:hover { color: #94A3B8; }
+        @media (max-width: 1060px) { .hero { flex-direction: column; text-align: center; padding: 60px 28px 80px; } .hero-right { flex: unset; } .hero h1 { font-size: 50px; } .hero-sub { margin-left: auto; margin-right: auto; } .hero-btns { justify-content: center; } .steps { grid-template-columns: repeat(2, 1fr); } .feat-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) { .hamburger { display: flex; } .nav-links { position: fixed; top: 0; right: -100%; width: 280px; height: 100vh; background: var(--white); flex-direction: column; padding: 80px 32px 32px; gap: 24px; box-shadow: -4px 0 24px rgba(0,0,0,0.1); z-index: 150; transition: right 0.3s ease; } .nav-links.open { right: 0; } .nav-links a { font-size: 17px; } .mobile-overlay { display: block; } .footer-links { gap: 32px; } .footer-inner { flex-direction: column; } }
+        @media (max-width: 640px) { nav { padding: 14px 20px; } .hero h1 { font-size: 38px; letter-spacing: -1.5px; } .stat-val { font-size: 42px; } .steps, .feat-grid { grid-template-columns: 1fr; } .invoice-card { width: 100%; max-width: 370px; } .form-box { padding: 28px 24px; } .section-top h2 { font-size: 32px; } .site-footer { padding: 40px 20px 24px; } .footer-links { flex-direction: column; gap: 28px; } .footer-bottom { flex-direction: column; text-align: center; } }
+        #network-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
     </style>
 </head>
 <body>
-
-<nav>
-    <a href="#" class="logo">InvoiceSorter</a>
-    <ul class="nav-links">
-        <li><a href="#features">Features</a></li>
-        <li><a href="#how">How it works</a></li>
-        <li><a href="#contact">Contact</a></li>
-        <li><a href="https://invoice-sorter-app-plum.vercel.app/login" class="btn-cta">Get started</a></li>
-    </ul>
-</nav>
-
-<section class="hero" id="hero">
-    <canvas id="network-canvas"></canvas>
-    <div class="hero-left">
-        <div class="pill">
-            <span class="pill-dot"></span>
-            AI-powered &middot; Live
-        </div>
-        <h1>Invoice<br>processing,<br><span class="accent">automated.</span></h1>
-        <p class="hero-sub">Export verified Excel files in seconds &mdash; with HS codes, UK duty rates, and VAT looked up automatically.</p>
-        <div class="hero-btns">
-            <a href="https://invoice-sorter-app-plum.vercel.app/login" class="btn-primary">Login</a>
-            <a href="#how" class="btn-outline">See how it works</a>
-        </div>
-    </div>
-    <div class="hero-right">
-        <div class="invoice-card">
-            <div class="card-bar">
-                <div class="dots"><i></i><i></i><i></i></div>
-                <span>Invoice Processor &middot; Live</span>
-            </div>
-            <div class="line-item">
-                <div class="li-info">
-                    <h4>Organic Cotton T-Shirts</h4>
-                    <p>HS: 6109.10.00 &middot; UK Duty: 12%</p>
-                </div>
-                <div class="li-right">
-                    <span class="price">&pound;2,340.00</span>
-                    <span class="tag-verified">
-                        <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        Verified
-                    </span>
-                </div>
-            </div>
-            <div class="line-item">
-                <div class="li-info">
-                    <h4>Stainless Steel Cutlery Set</h4>
-                    <p>HS: 8215.99.00 &middot; UK Duty: 0%</p>
-                </div>
-                <div class="li-right">
-                    <span class="price">&pound;890.50</span>
-                    <span class="tag-verified">
-                        <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        Verified
-                    </span>
-                </div>
-            </div>
-            <div class="line-item">
-                <div class="li-info">
-                    <h4>Ceramic Planters (Set of 6)</h4>
-                    <p>HS: 6913.10.00 &middot; UK Duty: 2.7%</p>
-                </div>
-                <div class="li-right">
-                    <span class="price">&pound;1,105.00</span>
-                    <span class="tag-verified">
-                        <svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        Verified
-                    </span>
-                </div>
+    <nav>
+        <a href="#" class="logo">InvoiceFlow</a>
+        <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+        <div class="mobile-overlay" id="mobile-overlay"></div>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#how">How it works</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="https://invoice-sorter-app-plum.vercel.app/login" class="btn-cta">Get started</a></li>
+        </ul>
+    </nav>
+    <section class="hero" id="hero">
+        <canvas id="network-canvas"></canvas>
+        <div class="hero-left">
+            <div class="pill"><span class="pill-dot"></span> AI-powered &middot; Live</div>
+            <h1>Invoice<br>processing,<br><span class="accent">automated.</span></h1>
+            <p class="hero-sub">Export verified Excel files in seconds &mdash; with HS codes, UK duty rates, and VAT looked up automatically.</p>
+            <div class="hero-btns">
+                <a href="https://invoice-sorter-app-plum.vercel.app/login" class="btn-primary">Login</a>
+                <a href="#how" class="btn-outline">See how it works</a>
             </div>
         </div>
-    </div>
-</section>
-
-<section class="stats">
-    <div class="stats-row">
-        <div class="stat">
-            <div class="stat-val">99.8%</div>
-            <div class="stat-lbl">Verification accuracy</div>
+        <div class="hero-right">
+            <div class="invoice-card">
+                <div class="card-bar"><div class="dots"><i></i><i></i><i></i></div><span>Invoice Processor &middot; Live</span></div>
+                <div class="line-item"><div class="li-info"><h4>Organic Cotton T-Shirts</h4><p>HS: 6109.10.00 &middot; UK Duty: 12%</p></div><div class="li-right"><span class="price">&pound;2,340.00</span><span class="tag-verified"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Verified</span></div></div>
+                <div class="line-item"><div class="li-info"><h4>Stainless Steel Cutlery Set</h4><p>HS: 8215.99.00 &middot; UK Duty: 0%</p></div><div class="li-right"><span class="price">&pound;890.50</span><span class="tag-verified"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Verified</span></div></div>
+                <div class="line-item"><div class="li-info"><h4>Ceramic Planters (Set of 6)</h4><p>HS: 6913.10.00 &middot; UK Duty: 2.7%</p></div><div class="li-right"><span class="price">&pound;1,105.00</span><span class="tag-verified"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Verified</span></div></div>
+            </div>
         </div>
-        <div class="stat">
-            <div class="stat-val">10x</div>
-            <div class="stat-lbl">Faster than manual</div>
-        </div>
-        <div class="stat">
-            <div class="stat-val">147</div>
-            <div class="stat-lbl">Products in memory</div>
-        </div>
-    </div>
-</section>
-
-<section class="how" id="how">
-    <div class="section-top">
-        <div class="section-pill">How it works</div>
-        <h2>Four steps to perfect invoices</h2>
-    </div>
-    <div class="steps">
-        <div class="step">
-            <div class="step-num">1</div>
-            <div class="step-ico">&#x1F4C4;</div>
-            <h3>Upload</h3>
-            <p>Drop your invoice &mdash; PDF, JPG, or Word document. We handle any format your suppliers use.</p>
-        </div>
-        <div class="step">
-            <div class="step-num">2</div>
-            <div class="step-ico">&#x1F916;</div>
-            <h3>AI extracts</h3>
-            <p>Dual verification &mdash; Run A vs Run B &mdash; two independent AI extractions are compared automatically for maximum accuracy.</p>
-        </div>
-        <div class="step">
-            <div class="step-num">3</div>
-            <div class="step-ico">&#x1F50D;</div>
-            <h3>Tariff lookup</h3>
-            <p>UK duty rates and VAT fetched live from the UK Trade Tariff API and appended to every line item.</p>
-        </div>
-        <div class="step">
-            <div class="step-num">4</div>
-            <div class="step-ico">&#x2B07;&#xFE0F;</div>
-            <h3>Download</h3>
-            <p>A clean, verified Excel file lands in your browser &mdash; ready to import into your accounting system.</p>
-        </div>
-    </div>
-</section>
-
-<section class="features" id="features">
-    <div class="features-inner">
-        <div class="section-top">
-            <div class="section-pill">Features</div>
-            <h2>Everything you need</h2>
-        </div>
+    </section>
+    <section class="stats"><div class="stats-row"><div class="stat"><div class="stat-val">99.8%</div><div class="stat-lbl">Verification accuracy</div></div><div class="stat"><div class="stat-val">10x</div><div class="stat-lbl">Faster than manual</div></div><div class="stat"><div class="stat-val">147</div><div class="stat-lbl">Products in memory</div></div></div></section>
+    <section class="how" id="how"><div class="section-top"><div class="section-pill">How it works</div><h2>Four steps to perfect invoices</h2></div>
+        <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-ico">&#x1F4C4;</div><h3>Upload</h3><p>Drop your invoice &mdash; PDF, JPG, or Word document. We handle any format your suppliers use.</p></div>
+            <div class="step"><div class="step-num">2</div><div class="step-ico">&#x1F916;</div><h3>AI extracts</h3><p>Dual verification &mdash; Run A vs Run B &mdash; two independent AI extractions are compared automatically for maximum accuracy.</p></div>
+            <div class="step"><div class="step-num">3</div><div class="step-ico">&#x1F50D;</div><h3>Tariff lookup</h3><p>UK duty rates and VAT fetched live from the UK Trade Tariff API and appended to every line item.</p></div>
+            <div class="step"><div class="step-num">4</div><div class="step-ico">&#x2B07;&#xFE0F;</div><h3>Download</h3><p>A clean, verified Excel file lands in your browser &mdash; ready to import into your accounting system.</p></div>
+        </div></section>
+    <section class="features" id="features"><div class="features-inner"><div class="section-top"><div class="section-pill">Features</div><h2>Everything you need</h2></div>
         <div class="feat-grid">
-            <div class="feat">
-                <div class="feat-ico">&#x1F6E1;&#xFE0F;</div>
-                <h3>Dual AI verification</h3>
-                <p>Two independent extractions are compared automatically for maximum accuracy &mdash; discrepancies are flagged before any export.</p>
-                <span class="feat-tag">99.8% accuracy</span>
-            </div>
-            <div class="feat">
-                <div class="feat-ico">&#x1F310;</div>
-                <h3>UK Trade Tariff lookup</h3>
-                <p>Duty rates and VAT fetched live from the UK Trade Tariff API &mdash; always current, no manual code lookups needed.</p>
-                <span class="feat-tag">Real-time data</span>
-            </div>
-            <div class="feat">
-                <div class="feat-ico">&#x1F9E0;</div>
-                <h3>Smart product memory</h3>
-                <p>Learns commodity subcodes over time &mdash; fewer questions, faster processing, and growing accuracy the more you use it.</p>
-                <span class="feat-tag">Gets smarter</span>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="contact" id="contact">
-    <div class="section-top">
-        <div class="section-pill">Contact</div>
-        <h2>Let's build your solution</h2>
-        <p style="color:var(--text-gray);margin-top:12px;font-size:16px;">Describe your problem &mdash; we'll build a custom solution for you.</p>
-    </div>
-    <form class="form-box" id="contact-form" action="https://formspree.io/f/xrerepre" method="POST">
-        <div class="fg">
-            <label>Name</label>
-            <input type="text" name="name" placeholder="Your full name" required>
-        </div>
-        <div class="fg">
-            <label>Email</label>
-            <input type="email" name="email" placeholder="you@company.com" required>
-        </div>
-        <div class="fg">
-            <label>Message</label>
-            <textarea name="message" placeholder="Describe your invoice processing challenge..." required></textarea>
-        </div>
-        <input type="hidden" name="_subject" value="Nieuw bericht via InvoiceSorter">
-        <button type="submit" class="btn-send">Send message</button>
-        <div id="fs-ok" style="display:none;margin-top:14px;padding:12px 18px;background:#e8f5e9;color:#2e7d32;border-radius:10px;font-size:14px;font-weight:500;text-align:center;">Bericht verzonden! Je hoort snel van ons.</form>
-    </div>
-    <div class="mail-line">
-        &#x2709;&#xFE0F; <a href="mailto:ai@dornack.com">ai@dornack.com</a>
-    </div>
-</section>
-
-<script>
-    const canvas = document.getElementById('network-canvas');
-    const ctx = canvas.getContext('2d');
-    let W, H;
-    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = canvas.parentElement.offsetHeight || 600; }
-    resize(); window.addEventListener('resize', resize);
-    const N = 65;
-    const pts = Array.from({length: N}, () => ({ x: Math.random()*window.innerWidth, y: Math.random()*600, vx: (Math.random()-0.5)*0.45, vy: (Math.random()-0.5)*0.45, r: Math.random()*2+1 }));
-    let mouse = {x:-999,y:-999};
-    window.addEventListener('mousemove', e => { mouse.x=e.clientX; mouse.y=e.clientY; });
-    window.addEventListener('mouseleave', () => { mouse.x=-999; mouse.y=-999; });
-    function getColor(x,alpha) { const t=Math.min(1,Math.max(0,x/W)); const r=Math.round(37+(124-37)*t); const g=Math.round(99+(58-99)*t); const b=Math.round(235+(237-235)*t); return 'rgba('+r+','+g+','+b+','+alpha+')'; }
-    function draw() {
-      ctx.clearRect(0,0,W,H);
-      for(let i=0;i<N;i++) {
-        const p=pts[i]; p.x+=p.vx; p.y+=p.vy;
-        if(p.x<0||p.x>W) p.vx*=-1; if(p.y<0||p.y>H) p.vy*=-1;
-        const mdx=mouse.x-p.x, mdy=mouse.y-p.y, md=Math.sqrt(mdx*mdx+mdy*mdy);
-        if(md<120&&md>0){p.x+=(mdx/md)*0.7;p.y+=(mdy/md)*0.7;}
-        for(let j=i+1;j<N;j++){const q=pts[j];const dx=p.x-q.x,dy=p.y-q.y,d=Math.sqrt(dx*dx+dy*dy);if(d<140){const alpha=(1-d/140)*0.4;const grad=ctx.createLinearGradient(p.x,p.y,q.x,q.y);grad.addColorStop(0,getColor(p.x,alpha));grad.addColorStop(1,getColor(q.x,alpha));ctx.strokeStyle=grad;ctx.lineWidth=0.9;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();}}
-        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=getColor(p.x,0.65);ctx.fill();
-      }
-      requestAnimationFrame(draw);
-    }
-    draw();
-</script>
-
-
-<script>
-// Show success message if redirected back after form submit
-if (window.location.search.includes('thanks=1')) {
-  document.getElementById('fs-ok') && (document.getElementById('fs-ok').style.display = 'block');
-}
-// Handle form submit via AJAX to stay on page
-const cf = document.getElementById('contact-form');
-if (cf) {
-  cf.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const btn = cf.querySelector('button[type=submit]');
-    btn.textContent = 'Verzenden...';
-    btn.disabled = true;
-    try {
-      const resp = await fetch(cf.action, {
-        method: 'POST',
-        body: new FormData(cf),
-        headers: { 'Accept': 'application/json' }
-      });
-      if (resp.ok) {
-        document.getElementById('fs-ok').style.display = 'block';
-        cf.reset();
-        btn.textContent = 'Verzonden!';
-      } else {
-        btn.textContent = 'Probeer opnieuw';
-        btn.disabled = false;
-      }
-    } catch(err) {
-      btn.textContent = 'Probeer opnieuw';
-      btn.disabled = false;
-    }
-  });
-}
-</script>
-
+            <div class="feat"><div class="feat-ico">&#x1F6E1;&#xFE0F;</div><h3>Dual AI verification</h3><p>Two independent extractions are compared automatically for maximum accuracy &mdash; discrepancies are flagged before any export.</p><span class="feat-tag">99.8% accuracy</span></div>
+            <div class="feat"><div class="feat-ico">&#x1F310;</div><h3>UK Trade Tariff lookup</h3><p>Duty rates and VAT fetched live from the UK Trade Tariff API &mdash; always current, no manual code lookups needed.</p><span class="feat-tag">Real-time data</span></div>
+            <div class="feat"><div class="feat-ico">&#x1F9E0;</div><h3>Smart product memory</h3><p>Learns commodity subcodes over time &mdash; fewer questions, faster processing, and growing accuracy the more you use it.</p><span class="feat-tag">Gets smarter</span></div>
+        </div></div></section>
+    <section class="contact" id="contact"><div class="section-top"><div class="section-pill">Contact</div><h2>Let's build your solution</h2><p style="color:var(--text-gray);margin-top:12px;font-size:16px;">Describe your problem &mdash; we'll build a custom solution for you.</p></div>
+        <form class="form-box" id="contact-form" action="https://formspree.io/f/xrerepre" method="POST">
+            <div class="fg"><label>Name</label><input type="text" name="name" placeholder="Your full name" required></div>
+            <div class="fg"><label>Email</label><input type="email" name="email" placeholder="you@company.com" required></div>
+            <div class="fg"><label>Message</label><textarea name="message" placeholder="Describe your invoice processing challenge..." required></textarea></div>
+            <input type="hidden" name="_subject" value="Nieuw bericht via InvoiceFlow">
+            <button type="submit" class="btn-send">Send message</button>
+            <div id="fs-ok" style="display:none;margin-top:14px;padding:12px 18px;background:#e8f5e9;color:#2e7d32;border-radius:10px;font-size:14px;font-weight:500;text-align:center;">Bericht verzonden! Je hoort snel van ons.</div>
+        </form>
+        <div class="mail-line">&#x2709;&#xFE0F; <a href="mailto:ai@dornack.com">ai@dornack.com</a></div></section>
+    <footer class="site-footer"><div class="footer-inner">
+        <div class="footer-brand"><a href="#" class="logo">InvoiceFlow</a><p>AI-powered invoice processing for customs and logistics. Faster, smarter, verified.</p></div>
+        <div class="footer-links">
+            <div class="footer-col"><h4>Product</h4><ul><li><a href="#features">Features</a></li><li><a href="#how">How it works</a></li><li><a href="https://invoice-sorter-app-plum.vercel.app/login">Login</a></li></ul></div>
+            <div class="footer-col"><h4>Company</h4><ul><li><a href="#contact">Contact</a></li><li><a href="mailto:ai@dornack.com" class="footer-contact-link">ai@dornack.com</a></li></ul></div>
+            <div class="footer-col"><h4>Legal</h4><ul><li><a href="#privacy">Privacy Policy</a></li><li><a href="#terms">Terms of Service</a></li></ul></div>
+        </div></div>
+        <div class="footer-bottom"><p>&copy; 2026 InvoiceFlow. All rights reserved.</p><div class="footer-bottom-links"><a href="#privacy">Privacy</a><a href="#terms">Terms</a><a href="#contact">Contact</a></div></div></footer>
+    <script>
+        const canvas = document.getElementById('network-canvas'); const ctx = canvas.getContext('2d'); let W, H;
+        function resize() { W = canvas.width = window.innerWidth; H = canvas.height = canvas.parentElement.offsetHeight || 600; }
+        resize(); window.addEventListener('resize', resize);
+        const N = 65; const pts = Array.from({length: N}, () => ({ x: Math.random()*window.innerWidth, y: Math.random()*600, vx: (Math.random()-0.5)*0.45, vy: (Math.random()-0.5)*0.45, r: Math.random()*2+1 }));
+        let mouse = {x:-999,y:-999};
+        window.addEventListener('mousemove', e => { mouse.x=e.clientX; mouse.y=e.clientY; });
+        window.addEventListener('mouseleave', () => { mouse.x=-999; mouse.y=-999; });
+        function getColor(x,alpha) { const t=Math.min(1,Math.max(0,x/W)); const r=Math.round(37+(124-37)*t); const g=Math.round(99+(58-99)*t); const b=Math.round(235+(237-235)*t); return 'rgba('+r+','+g+','+b+','+alpha+')'; }
+        function draw() { ctx.clearRect(0,0,W,H); for(let i=0;i<N;i++) { const p=pts[i]; p.x+=p.vx; p.y+=p.vy; if(p.x<0||p.x>W) p.vx*=-1; if(p.y<0||p.y>H) p.vy*=-1; const mdx=mouse.x-p.x, mdy=mouse.y-p.y, md=Math.sqrt(mdx*mdx+mdy*mdy); if(md<120&&md>0){p.x+=(mdx/md)*0.7;p.y+=(mdy/md)*0.7;} for(let j=i+1;j<N;j++){const q=pts[j];const dx=p.x-q.x,dy=p.y-q.y,d=Math.sqrt(dx*dx+dy*dy);if(d<140){const alpha=(1-d/140)*0.4;const grad=ctx.createLinearGradient(p.x,p.y,q.x,q.y);grad.addColorStop(0,getColor(p.x,alpha));grad.addColorStop(1,getColor(q.x,alpha));ctx.strokeStyle=grad;ctx.lineWidth=0.9;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();}} ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=getColor(p.x,0.65);ctx.fill(); } requestAnimationFrame(draw); }
+        draw();
+    </script>
+    <script>
+        if (window.location.search.includes('thanks=1')) { document.getElementById('fs-ok') && (document.getElementById('fs-ok').style.display = 'block'); }
+        const cf = document.getElementById('contact-form');
+        if (cf) { cf.addEventListener('submit', async function(e) { e.preventDefault(); const btn = cf.querySelector('button[type=submit]'); btn.textContent = 'Verzenden...'; btn.disabled = true; try { const resp = await fetch(cf.action, { method: 'POST', body: new FormData(cf), headers: { 'Accept': 'application/json' } }); if (resp.ok) { document.getElementById('fs-ok').style.display = 'block'; cf.reset(); btn.textContent = 'Verzonden!'; } else { btn.textContent = 'Probeer opnieuw'; btn.disabled = false; } } catch(err) { btn.textContent = 'Probeer opnieuw'; btn.disabled = false; } }); }
+    </script>
+    <script>
+        const hamburger = document.getElementById('hamburger'); const navLinks = document.getElementById('nav-links'); const overlay = document.getElementById('mobile-overlay');
+        function toggleMenu() { hamburger.classList.toggle('active'); navLinks.classList.toggle('open'); overlay.classList.toggle('active'); document.body.style.overflow = navLinks.classList.contains('open') ? 'hidden' : ''; }
+        hamburger.addEventListener('click', toggleMenu); overlay.addEventListener('click', toggleMenu);
+        navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => { if (navLinks.classList.contains('open')) toggleMenu(); }));
+    </script>
 </body>
 </html>
