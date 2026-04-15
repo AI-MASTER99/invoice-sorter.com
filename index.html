@@ -1,7 +1,4 @@
-section.features {
-                    padding: 96px 24px;
-                    background: var(--blue-bg);
-                }<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -55,7 +52,7 @@ section.features {
         .logo {
             font-size: 22px;
             font-weight: 800;
-            background: linear-gradient(135deg, var(--blue-primary), var(--blue-accent));
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -81,7 +78,7 @@ section.features {
         .nav-links a:hover { color: var(--blue-primary); }
 
         .btn-cta {
-            background: linear-gradient(135deg, var(--blue-primary), var(--blue-accent));
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
             color: var(--white) !important;
             padding: 10px 24px;
             border-radius: 24px;
@@ -179,7 +176,7 @@ section.features {
         .btn-primary {
             display: inline-flex;
             align-items: center;
-            background: linear-gradient(135deg, var(--blue-primary), var(--blue-accent));
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
             color: var(--white);
             padding: 14px 34px;
             border-radius: 28px;
@@ -206,7 +203,7 @@ section.features {
             font-weight: 600;
             border: 1.5px solid rgba(67,97,238,0.3);
             transition: all 0.2s;
-            background-image: linear-gradient(135deg, var(--blue-primary), var(--blue-accent));
+            background-image: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -441,19 +438,18 @@ section.features {
         }
 
         .feat-grid {
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 24px;
-                    margin-top: 48px;
-                }
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
 
         .feat {
-                    background: #fff;
-                    border: 1px solid var(--border-light);
-                    border-radius: 18px;
-                    padding: 32px 28px;
-                    box-shadow: 0 2px 12px rgba(67,97,238,0.06);
-                }
+            background: var(--white);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 36px 28px;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
 
         .feat:last-child {
             border-color: rgba(67,97,238,0.35);
@@ -466,16 +462,16 @@ section.features {
         }
 
         .feat-ico {
-                    width: 48px;
-                    height: 48px;
-                    border-radius: 12px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 24px;
-                    margin-bottom: 18px;
-                    background: var(--blue-light);
-                }
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: var(--blue-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 22px;
+        }
 
         .feat h3 {
             font-size: 20px;
@@ -548,28 +544,18 @@ section.features {
         }
 
         .btn-send {
-                    width: 100%;
-                    padding: 16px;
-                    background: #2563EB;
-                    color: #fff;
-                    border: none;
-                    border-radius: 10px;
-                    font-size: 16px;
-                    font-weight: 700;
-                    cursor: pointer;
-                    transition: background 0.2s, transform 0.1s;
-                    letter-spacing: 0.01em;
-                }
-                .btn-send:hover {
-                    background: #1d4ed8;
-                    transform: translateY(-1px);
-                }
-                .btn-send:disabled {
-                    opacity: 0.7;
-                    cursor: not-allowed;
-                    transform: none;
-                }
-
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            color: var(--white);
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s;
+        }
 
         .btn-send:hover {
             opacity: 0.92;
@@ -625,16 +611,7 @@ section.features {
             pointer-events: none;
             z-index: 0;
         }
-    
-                .fg input:invalid:not(:placeholder-shown),
-                .fg textarea:invalid:not(:placeholder-shown) {
-                    border-color: #ef4444;
-                }
-                .fg input:valid:not(:placeholder-shown),
-                .fg textarea:valid:not(:placeholder-shown) {
-                    border-color: #22c55e;
-                }
-</style>
+    </style>
 </head>
 <body>
 
@@ -810,7 +787,7 @@ section.features {
             <textarea name="message" placeholder="Describe your invoice processing challenge..." required></textarea>
         </div>
         <input type="hidden" name="_subject" value="Nieuw bericht via InvoiceFlow">
-        <button type="submit" class="btn-send" id="submit-btn">Send message</button>
+        <button type="submit" class="btn-send">Send message</button>
         <div id="fs-ok" style="display:none;margin-top:14px;padding:12px 18px;background:#e8f5e9;color:#2e7d32;border-radius:10px;font-size:14px;font-weight:500;text-align:center;">â Bericht verzonden! Je hoort snel van ons.</form>
     </div>
     <div class="mail-line">
@@ -819,70 +796,30 @@ section.features {
 </section>
 
 <script>
-(function() {
     const canvas = document.getElementById('network-canvas');
-    if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const hero = canvas.parentElement;
-    let dots = [];
-    let w, h;
-    const DOT_COUNT = 65;
-    const MAX_DIST = 180;
-    function resize() {
-        w = hero.offsetWidth;
-        h = hero.offsetHeight;
-        canvas.width = w * devicePixelRatio;
-        canvas.height = h * devicePixelRatio;
-        canvas.style.width = w + 'px';
-        canvas.style.height = h + 'px';
-        ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
-    }
-    function init() {
-        resize();
-        dots = [];
-        for (let i = 0; i < DOT_COUNT; i++) {
-            dots.push({
-                x: Math.random() * w,
-                y: Math.random() * h,
-                vx: (Math.random() - 0.5) * 0.35,
-                vy: (Math.random() - 0.5) * 0.35,
-                r: Math.random() * 2 + 1.5
-            });
-        }
-    }
+    let W, H;
+    function resize() { W = canvas.width = window.innerWidth; H = canvas.height = canvas.parentElement.offsetHeight || 600; }
+    resize(); window.addEventListener('resize', resize);
+    const N = 65;
+    const pts = Array.from({length: N}, () => ({ x: Math.random()*window.innerWidth, y: Math.random()*600, vx: (Math.random()-0.5)*0.45, vy: (Math.random()-0.5)*0.45, r: Math.random()*2+1 }));
+    let mouse = {x:-999,y:-999};
+    window.addEventListener('mousemove', e => { mouse.x=e.clientX; mouse.y=e.clientY; });
+    window.addEventListener('mouseleave', () => { mouse.x=-999; mouse.y=-999; });
+    function getColor(x,alpha) { const t=Math.min(1,Math.max(0,x/W)); const r=Math.round(37+(124-37)*t); const g=Math.round(99+(58-99)*t); const b=Math.round(235+(237-235)*t); return 'rgba('+r+','+g+','+b+','+alpha+')'; }
     function draw() {
-        ctx.clearRect(0, 0, w, h);
-        for (let i = 0; i < dots.length; i++) {
-            for (let j = i + 1; j < dots.length; j++) {
-                const dx = dots[i].x - dots[j].x;
-                const dy = dots[i].y - dots[j].y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < MAX_DIST) {
-                    ctx.beginPath();
-                    ctx.moveTo(dots[i].x, dots[i].y);
-                    ctx.lineTo(dots[j].x, dots[j].y);
-                    ctx.strokeStyle = 'rgba(67, 97, 238, ' + (0.15 * (1 - dist / MAX_DIST)) + ')';
-                    ctx.lineWidth = 0.9;
-                    ctx.stroke();
-                }
-            }
-        }
-        for (const d of dots) {
-            ctx.beginPath();
-            ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(67, 97, 238, 0.28)';
-            ctx.fill();
-            d.x += d.vx;
-            d.y += d.vy;
-            if (d.x < 0 || d.x > w) d.vx *= -1;
-            if (d.y < 0 || d.y > h) d.vy *= -1;
-        }
-        requestAnimationFrame(draw);
+      ctx.clearRect(0,0,W,H);
+      for(let i=0;i<N;i++) {
+        const p=pts[i]; p.x+=p.vx; p.y+=p.vy;
+        if(p.x<0||p.x>W) p.vx*=-1; if(p.y<0||p.y>H) p.vy*=-1;
+        const mdx=mouse.x-p.x, mdy=mouse.y-p.y, md=Math.sqrt(mdx*mdx+mdy*mdy);
+        if(md<120&&md>0){p.x+=(mdx/md)*0.7;p.y+=(mdy/md)*0.7;}
+        for(let j=i+1;j<N;j++){const q=pts[j];const dx=p.x-q.x,dy=p.y-q.y,d=Math.sqrt(dx*dx+dy*dy);if(d<140){const alpha=(1-d/140)*0.4;const grad=ctx.createLinearGradient(p.x,p.y,q.x,q.y);grad.addColorStop(0,getColor(p.x,alpha));grad.addColorStop(1,getColor(q.x,alpha));ctx.strokeStyle=grad;ctx.lineWidth=0.9;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();}}
+        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=getColor(p.x,0.65);ctx.fill();
+      }
+      requestAnimationFrame(draw);
     }
-    init();
     draw();
-    window.addEventListener('resize', resize);
-})();
 </script>
 
 
